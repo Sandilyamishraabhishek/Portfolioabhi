@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Abhishek Mishra — Portfolio</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- GSAP (animations) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <!-- tsParticles (particles background) -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+
+  <!-- three.js (3D accent) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#071026;
+      --panel: rgba(255,255,255,0.04);
+      --muted:#9fb0c7;
+      --accent:#ffd369;
+      --glass: rgba(255,255,255,0.03);
+    }
+    body.light {
+      --bg: #f7f9fc;
+      --panel: rgba(10,18,28,0.04);
+      --muted: #4b5563;
+      color:#071026;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:#fff;-webkit-font-smoothing:antialiased}
+    a{color:var(--accent);text-decoration:none}
+    /* NAVBAR */
+    header {
+      position:fixed;left:18px;right:18px;top:18px;z-index:80;
+      display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-radius:12px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      backdrop-filter: blur(8px);
+      transition: transform .25s, box-shadow .25s, background .25s;
+    }
+    header.scrolled{box-shadow:0 12px 30px rgba(3,8,20,0.5)}
+    .brand{font-weight:800}
+    nav { display:flex; gap:14px; align-items:center }
+    nav a { color:var(--muted); font-weight:600; padding:8px 10px; border-radius:8px }
+    nav a:hover{ color:var(--accent) }
+    .cta { background:var(--accent); border:none; color:#000; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700 }
+    .hamb { display:none; width:42px; height:42px; align-items:center; justify-content:center; border-radius:8px; border:1px solid rgba(255,255,255,0.04); cursor:pointer }
+    .hamb .bar{width:18px;height:2px;background:var(--muted); position:relative}
+    .hamb .bar::before,.hamb .bar::after{content:'';position:absolute;left:0;right:0;height:2px;background:var(--muted)}
+    .hamb .bar::before{top:-6px}.hamb .bar::after{bottom:-6px}
+
+    /* HERO */
+    .hero{height:100vh;display:flex;align-items:center;justify-content:center;padding:40px;position:relative;overflow:hidden}
+    #particles{position:absolute;inset:0;z-index:1;pointer-events:none}
+    .blobs{position:absolute;inset:0;z-index:2;pointer-events:none}
+    #three-canvas{position:absolute;right:6%;top:10%;width:360px;height:360px;z-index:3;border-radius:14px;overflow:hidden;opacity:0.95;filter:drop-shadow(0 18px 40px rgba(0,0,0,0.45))}
+
+    .hero-inner{position:relative;z-index:10;max-width:1200px;width:100%;display:grid;grid-template-columns:1fr 420px;gap:36px;align-items:center}
+    .intro h1{font-size:48px;margin:0 0 12px 0;line-height:1.02}
+    .intro p{color:var(--muted);margin:0 0 18px 0;font-size:17px}
+    .intro .buttons{display:flex;gap:12px}
+    .panel{background:var(--panel);padding:20px;border-radius:12px}
+
+    /* ABOUT card */
+    .about-card{display:flex;gap:16px;align-items:center}
+    .avatar{width:96px;height:96px;border-radius:12px;flex-shrink:0;object-fit:cover;border:3px solid rgba(255,255,255,0.06)}
+    .meta h3{margin:0;font-size:18px}
+    .meta p{margin:6px 0 0;color:var(--muted);font-size:14px}
+
+    /* SECTIONS */
+    section{padding:90px 22px}
+    .container{max-width:1100px;margin:0 auto}
+
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:20px}
+    .card{background:var(--panel);padding:18px;border-radius:12px;transition:transform .3s;box-shadow:0 6px 20px rgba(2,6,23,0.35)}
+    .card:hover{transform:translateY(-8px)}
+
+    /* PROJECTS LIST */
+    .projects a{display:block;padding:12px;border-radius:10px;margin-bottom:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:var(--muted);font-weight:600}
+
+    /* SKILLS */
+    .skills{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .skill{background:rgba(255,255,255,0.04);padding:8px 10px;border-radius:999px;font-weight:700;color:var(--muted)}
+
+    /* CONTACT */
+    form{max-width:640px;margin:16px auto 0;display:grid;gap:10px}
+    input,textarea{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;outline:none}
+    .small{color:var(--muted);font-size:13px;margin-top:8px}
+
+    footer{padding:40px 22px;color:var(--muted);text-align:center}
+
+    /* responsive */
+    @media(max-width:1024px){ .hero-inner{grid-template-columns:1fr} #three-canvas{position:static;margin-top:18px;width:100%;height:300px} }
+    @media(max-width:800px){ .hamb{display:flex} nav{display:none} header{padding:10px} .intro h1{font-size:32px} .hero{padding:22px} }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <header id="topNav">
+    <div style="display:flex;gap:16px;align-items:center">
+      <div class="brand">Abhishek Mishra</div>
+      <nav id="mainNav">
+        <a href="#hero">Home</a>
+        <a href="a.html">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#skills">Skills</a>
+        <a href="#contact">Contact</a>
+        <a href="https://drive.google.com/file/d/11X0Tc6W8szKk5e8ZF6VFo67eiB2xfPgZ/view?usp=drivesdk" title="Resume (PDF)" target="_blank">Resume</a>
+      </nav>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="cta" id="downloadResume" onclick="window.open('https://drive.google.com/file/d/11X0Tc6W8szKk5e8ZF6VFo67eiB2xfPgZ/view?usp=drivesdk','_blank')">Download CV</button>
+      <button class="cta" id="themeToggle" title="Toggle theme" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">🌓</button>
+      <button class="hamb" id="hamb"><div class="bar"></div></button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div id="particles"></div>
+    <div class="blobs" id="blobs"></div>
+
+    <div class="hero-inner container">
+      <!-- LEFT: intro -->
+      <div class="intro">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <span style="display:inline-block;background:rgba(255,211,105,0.12);color:var(--accent);padding:6px 9px;border-radius:999px;font-weight:700">Open to work</span>
+          <small style="color:var(--muted)">Software Engineer • Java, C++, Python</small>
+        </div>
+        <h1>Hello — I'm Abhishek<br><span style="color:var(--accent)">Software Engineer</span></h1>
+        <p>I build reliable, performant applications and enjoy working across frontend, backend, and cloud. Strong in algorithms, systems and practical engineering.</p>
+
+        <div class="buttons" style="margin-top:16px">
+          <button class="cta" onclick="document.getElementById('projects').scrollIntoView({behavior:'smooth'})">See Projects</button>
+          <button class="cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})" style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)">Contact</button>
+        </div>
+
+        <div style="margin-top:18px" class="small">Links: <a href="https://github.com/Sandilyamishraabhishek" target="_blank">GitHub</a> · <a href="https://www.linkedin.com/in/abhishek-mishra-73a20725a" target="_blank">LinkedIn</a></div>
+      </div>
+
+      <!-- RIGHT: profile + quick info -->
+      <aside class="panel">
+        <div class="about-card">
+          <img class="avatar" src="a.jpg.jpg" alt="Abhishek Mishra">
+          <div class="meta">
+            <h3>Abhishek Mishra</h3>
+            <p>Software Engineer · Lucknow, India</p>
+            <div style="margin-top:8px"><strong style="color:var(--accent)">Email:</strong> abhirec8081@gmail.com</div>
+            <div style="margin-top:4px"><strong style="color:var(--accent)">Phone:</strong> 8081720540</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px">
+          <div style="font-weight:700;margin-bottom:8px">Highlights</div>
+          <div class="feature-list" style="display:flex;flex-direction:column;gap:8px">
+            <div style="color:var(--muted)">• Distributed Systems & Networking</div>
+            <div style="color:var(--muted)">• AWS, Linux, Git</div>
+            <div style="color:var(--muted)">• Data Structures & Algorithms</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="container">
+      <h2>Projects</h2>
+      <div class="projects" style="margin-top:12px">
+        <a href="https://github.com/Sandilyamishraabhishek/Digital_Library" target="_blank">Digital Library — React / .NET</a>
+        <a href="https://github.com/Sandilyamishraabhishek/BANKING-SYSTEM" target="_blank">Banking Management System — C++ / SQLite</a>
+        <a href="https://github.com/Sandilyamishraabhishek?tab=repositories" target="_blank">More projects on my GitHub →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="container">
+      <h2>Skills</h2>
+      <div class="cards" style="margin-top:12px">
+        <div class="card">
+          <strong>Languages</strong>
+          <div class="skills" style="margin-top:10px">
+            <div class="skill">Java</div><div class="skill">C/C++</div><div class="skill">Python</div><div class="skill">SQL</div>
+          </div>
+        </div>
+        <div class="card">
+          <strong>Web & Cloud</strong>
+          <div class="skills" style="margin-top:10px">
+            <div class="skill">HTML / CSS / JS</div><div class="skill">Spring Boot</div><div class="skill">AWS</div><div class="skill">Docker (basics)</div>
+          </div>
+        </div>
+        <div class="card">
+          <strong>Tools</strong>
+          <div class="skills" style="margin-top:10px">
+            <div class="skill">Git</div><div class="skill">Linux</div><div class="skill">Jupyter</div><div class="skill">VS Code</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3D object (decorative) -->
+  <div id="three-canvas" aria-hidden="true"></div>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <h2>Contact</h2>
+      <form id="contactForm" onsubmit="sendMail(event)">
+        <input type="text" name="name" placeholder="Your name" required>
+        <input type="email" name="email" placeholder="Your email" required>
+        <textarea name="message" rows="5" placeholder="Your message" required></textarea>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:6px">
+          <button class="cta" type="submit">Send message</button>
+          <button type="button" onclick="document.getElementById('contactForm').reset()" style="background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:var(--muted)">Clear</button>
+        </div>
+        <div class="small" id="formStatus"></div>
+      </form>
+      <div style="text-align:center;margin-top:14px;color:var(--muted)">Or email me directly: <a href="mailto:abhirec8081@gmail.com">abhirec8081@gmail.com</a></div>
+    </div>
+  </section>
+
+  <footer>
+    © <span id="year"></span> Abhishek Mishra • Built with HTML, GSAP, tsParticles & Three.js
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script>
+    // set year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // NAV: hamburger toggle
+    const hamb = document.getElementById('hamb');
+    const mainNav = document.getElementById('mainNav');
+    hamb.addEventListener('click', ()=> {
+      if (mainNav.style.display === 'flex') {
+        mainNav.style.display = '';
+      } else {
+        mainNav.style.display = 'flex';
+        mainNav.style.flexDirection = 'column';
+        mainNav.style.position = 'absolute';
+        mainNav.style.top = '66px';
+        mainNav.style.right = '18px';
+        mainNav.style.background = 'rgba(0,0,0,0.45)';
+        mainNav.style.padding = '12px';
+        mainNav.style.borderRadius = '10px';
+      }
+    });
+
+    // header shadow on scroll
+    const header = document.getElementById('topNav');
+    window.addEventListener('scroll', ()=> {
+      if (window.scrollY > 20) header.classList.add('scrolled'); else header.classList.remove('scrolled');
+    });
+
+    // THEME toggle
+    const themeBtn = document.getElementById('themeToggle');
+    themeBtn.addEventListener('click', ()=> {
+      document.body.classList.toggle('light');
+      // persist simple preference
+      localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+    });
+    // load preference
+    (function(){
+      if (localStorage.getItem('theme') === 'light') document.body.classList.add('light');
+    })();
+
+    // PRELOADER
+    window.addEventListener('load', ()=> {
+      const pre = document.getElementById('preloader');
+      if (pre) {
+        gsap.to(pre, { opacity:0, duration:0.5, onComplete: ()=> pre.remove() });
+      }
+    });
+
+    // tsParticles background
+    tsParticles.load("particles", {
+      fpsLimit: 60,
+      interactivity: {
+        events: { onHover: { enable: true, mode: "repulse" }, onClick: { enable: true, mode: "push" } },
+        modes: { repulse: { distance: 120 }, push: { quantity: 3 } }
+      },
+      particles: {
+        number: { value: 55 },
+        color: { value: ["#ffffff", "#ffd369", "#9be7ff"] },
+        links: { enable: true, color: "#ffffff", opacity: 0.08 },
+        move: { enable: true, speed: 0.6, outModes: "out" },
+        size: { value: { min: 1, max: 4 } },
+        opacity: { value: { min: 0.2, max: 0.9 } }
+      }
+    });
+
+    // floating blobs (DOM) — decorative animated gradients
+    (function createBlobs(){
+      const c = document.getElementById('blobs');
+      if(!c) return;
+      for(let i=0;i<3;i++){
+        const d = document.createElement('div');
+        const size = 140 + Math.random()*200;
+        d.style.width = size + 'px';
+        d.style.height = size + 'px';
+        d.style.position = 'absolute';
+        d.style.left = (10 + Math.random()*70) + '%';
+        d.style.top = (5 + Math.random()*75) + '%';
+        d.style.borderRadius = '40% 60% 55% 45% / 50% 45% 55% 50%';
+        d.style.filter = 'blur(36px)';
+        d.style.opacity = 0.7 - Math.random()*0.4;
+        d.style.pointerEvents = 'none';
+        d.style.background = `radial-gradient(circle at 30% 30%, rgba(255,211,105,0.14), rgba(155,231,255,0.06) 40%, transparent 70%)`;
+        c.appendChild(d);
+        gsap.to(d, { x: (Math.random()*200-100), y: (Math.random()*120-60), rotation: (Math.random()*40-20), duration: 6+Math.random()*6, ease:'sine.inOut', yoyo:true, repeat:-1 });
+      }
+    })();
+
+    // GSAP reveals & small parallax
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.from('.intro h1', { y: 30, opacity:0, duration: 0.9 });
+    gsap.from('.intro p', { y: 20, opacity:0, duration: 0.9, delay: 0.12 });
+    gsap.utils.toArray('.card, .projects a, .skill, .about-card').forEach((el, i) => {
+      gsap.from(el, { y: 20, opacity:0, duration: 0.7, delay: i*0.06, scrollTrigger: { trigger: el, start: 'top 90%' }});
+    });
+
+    // Three.js decorative object
+    (function threeScene(){
+      const container = document.getElementById('three-canvas');
+      if (!container) return;
+      const scene = new THREE.Scene();
+      const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+      container.appendChild(renderer.domElement);
+      const camera = new THREE.PerspectiveCamera(50, container.clientWidth / Math.max(1, container.clientHeight), 0.1, 100);
+      camera.position.z = 4.5;
+
+      // lights
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(5,5,5);
+      scene.add(light);
+      scene.add(new THREE.AmbientLight(0x404040, 0.8));
+
+      // geometry (torus knot)
+      const geom = new THREE.TorusKnotGeometry(1.1, 0.32, 180, 32);
+      const mat = new THREE.MeshStandardMaterial({ color:0xffd369, metalness:0.1, roughness:0.45, emissive:0x222222 });
+      const mesh = new THREE.Mesh(geom, mat);
+      scene.add(mesh);
+
+      function resize(){
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / Math.max(1, h);
+        camera.updateProjectionMatrix();
+      }
+      resize(); window.addEventListener('resize', resize);
+
+      // mouse parallax
+      const mouse = { x:0, y:0 };
+      container.addEventListener('mousemove', (e)=> {
+        const r = container.getBoundingClientRect();
+        mouse.x = ( (e.clientX - r.left) / r.width ) * 2 - 1;
+        mouse.y = - ( (e.clientY - r.top) / r.height ) * 2 + 1;
+      });
+
+      let t = 0;
+      function animate(){
+        t += 0.01;
+        mesh.rotation.x = 0.4 * Math.sin(t*0.9);
+        mesh.rotation.y = t * 0.4;
+        camera.position.x += (mouse.x*1.5 - camera.position.x) * 0.06;
+        camera.position.y += (mouse.y*1.5 - camera.position.y) * 0.06;
+        camera.lookAt(scene.position);
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+
+    // CONTACT: simple mailto fallback and optional send via backend
+    function sendMail(e){
+      e.preventDefault();
+      const form = e.target;
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const message = form.message.value.trim();
+      const status = document.getElementById('formStatus');
+
+      if (!name || !email || !message) { status.textContent = 'Please complete all fields.'; return; }
+
+      // Simple mailto fallback (client-side) — opens user's email app
+      const subject = encodeURIComponent(`Portfolio message from ${name}`);
+      const body = encodeURIComponent(`${message}\n\n— ${name}\n${email}`);
+      window.location.href = `mailto:abhirec8081@gmail.com?subject=${subject}&body=${body}`;
+
+      status.textContent = 'Opening your email client...';
+    }
+  </script>
+  http://localhost:3000/api/chat
+  <!-- AI ASSISTANT BUTTON -->
+<button id="aiBtn" 
+  style="
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--accent);
+    color: #000;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: none;
+    font-weight: 800;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+    cursor: pointer;
+    z-index: 200;
+  ">
+  AI Assistant 🤖
+</button>
+
+<!-- AI CHAT WINDOW -->
+<div id="chatWindow"
+  style="
+    position: fixed;
+    bottom: 86px;
+    right: 24px;
+    width: 320px;
+    height: 430px;
+    background: var(--panel);
+    backdrop-filter: blur(8px);
+    border-radius: 14px;
+    padding: 12px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 300;
+  ">
+  
+  <div id="chatMessages" 
+       style="flex: 1; overflow-y: auto; padding-right: 6px; color: var(--muted); font-size: 14px;"></div>
+
+  <input id="chatInput" 
+         placeholder="Ask something..." 
+         style="width: 100%; padding: 10px; border-radius: 8px; background: transparent; color: inherit; border: 1px solid rgba(255,255,255,0.06); margin-top: 6px;">
+</div>
+
+<script>
+// ===== FRONTEND OPENAI-POWERED CHATBOT =====
+const aiBtn = document.getElementById("aiBtn");
+const chatWindow = document.getElementById("chatWindow");
+const chatInput = document.getElementById("chatInput");
+const chatMessages = document.getElementById("chatMessages");
+
+let chatHistory = [
+  { role: "system", content: "You are Abhishek Mishra’s portfolio AI assistant. Answer clearly and helpfully." }
+];
+
+// Toggle chat visibility
+aiBtn.addEventListener("click", () => {
+  chatWindow.style.display = chatWindow.style.display === "flex" ? "none" : "flex";
+  if (chatWindow.style.display === "flex") chatInput.focus();
+});
+
+// ENTER key sends message
+chatInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMsg();
+});
+
+// Helper: Append message to UI
+function addMessage(role, text) {
+  const msg = document.createElement("div");
+  msg.style.marginBottom = "8px";
+  msg.innerHTML = `<b>${role === "you" ? "You" : "AI"}:</b> ${text}`;
+  chatMessages.appendChild(msg);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Typing animation
+function typeEffect(element, text, speed = 20) {
+  let i = 0;
+  element.innerHTML = "<b>AI:</b> ";
+  function typing() {
+    if (i < text.length) {
+      element.innerHTML += text.charAt(i);
+      i++;
+      setTimeout(typing, speed);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  }
+  typing();
+}
+
+async function sendMsg() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+
+  addMessage("you", text);
+  chatInput.value = "";
+
+  // Add loading bubble
+  const loading = document.createElement("div");
+  loading.innerHTML = `<b>AI:</b> <span style="opacity:0.6">Thinking...</span>`;
+  chatMessages.appendChild(loading);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  chatHistory.push({ role: "user", content: text });
+
+  try {
+    const res = await fetch("http://localhost:3000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: chatHistory })
+    });
+
+    const data = await res.json();
+
+    loading.remove();
+
+    const reply = data.reply || "Sorry, I couldn't process that.";
+
+    // Add typing animation
+    const bubble = document.createElement("div");
+    chatMessages.appendChild(bubble);
+    typeEffect(bubble, reply);
+
+    chatHistory.push({ role: "assistant", content: reply });
+
+  } catch (error) {
+    loading.innerHTML = `<b>AI:</b> Error connecting to backend.`;
+  }
+}
+</script>
+
+</body>
+</html>

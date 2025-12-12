@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>About — Abhishek Mishra</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <!-- tsParticles -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+
+  <!-- three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#071026;
+      --panel: rgba(255,255,255,0.04);
+      --muted:#9fb0c7;
+      --accent:#ffd369;
+      --glass: rgba(255,255,255,0.03);
+      --glow: 0 8px 40px rgba(255,211,105,0.12);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:#fff;-webkit-font-smoothing:antialiased}
+    a{color:var(--accent);text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 18px}
+
+    /* Header */
+    header { position:fixed;left:18px;right:18px;top:18px;z-index:80;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px)}
+    .brand{font-weight:800}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:var(--muted);padding:8px 10px;border-radius:8px}
+    nav a:hover{color:var(--accent)}
+    .cta{background:var(--accent);border:none;color:#000;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+
+    /* hero */
+    .hero{min-height:40vh;padding:120px 0 60px;position:relative;overflow:hidden}
+    #particles{position:absolute;inset:0;z-index:1;pointer-events:none}
+    .hero-panel{position:relative;z-index:10;display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:center}
+    .intro h1{font-size:40px;margin:0;line-height:1.02}
+    .intro p{color:var(--muted);margin:10px 0 0;font-size:16px}
+    .avatar{width:120px;height:120px;border-radius:14px;object-fit:cover;border:3px solid rgba(255,255,255,0.06)}
+
+    /* cards and layout */
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    .card{background:var(--panel);padding:18px;border-radius:12px;box-shadow:0 6px 22px rgba(2,6,23,0.4);transition:transform .25s, box-shadow .25s}
+    .card:hover{transform:translateY(-8px);box-shadow:var(--glow)}
+    .card h3{margin:0 0 6px}
+    .muted{color:var(--muted);font-size:14px}
+
+    /* education list */
+    .edu-list{display:flex;flex-direction:column;gap:12px}
+    .edu-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00))}
+    .edu-left{max-width:75%}
+    .edu-meta{font-size:13px;color:var(--muted)}
+    .btn-link{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-weight:700}
+    .btn-link:hover{color:var(--accent);border-color:rgba(255,211,105,0.12);box-shadow:var(--glow)}
+
+    /* projects */
+    .projects-list{display:flex;flex-direction:column;gap:10px}
+    .project{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px}
+    .project:hover{background:rgba(255,255,255,0.02);transform:translateX(6px)}
+
+    /* certificates */
+    .certs{display:flex;flex-wrap:wrap;gap:10px}
+    .cert{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.03);font-weight:700;color:var(--muted)}
+    .cert:hover{background:linear-gradient(90deg, rgba(255,211,105,0.10), rgba(155,231,255,0.04));color:#000;box-shadow:var(--glow)}
+
+    /* AI assistant button & chat */
+    #aiBtn {position:fixed;bottom:24px;right:24px;background:var(--accent);color:#000;border:none;padding:14px;border-radius:14px;cursor:pointer;font-weight:800;z-index:220;box-shadow:0 14px 40px rgba(0,0,0,0.45)}
+    #chatWindow {position:fixed;bottom:90px;right:24px;width:340px;height:480px;border-radius:14px;background:var(--panel);backdrop-filter:blur(8px);display:none;flex-direction:column;padding:12px;z-index:230;box-shadow:0 18px 50px rgba(0,0,0,0.5)}
+    #chatMessages{flex:1;overflow:auto;padding:8px;font-size:14px;color:var(--muted)}
+    .msg.you{color:#fff;margin:6px 0}
+    .msg.ai{color:var(--muted);margin:6px 0}
+    #chatInput{border-radius:8px;border:1px solid rgba(255,255,255,0.06);padding:10px;margin-top:8px;background:transparent;color:inherit}
+
+    /* responsive */
+    @media(max-width:980px){
+      .hero-panel{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+      #chatWindow{right:12px;left:12px;width:auto}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- header -->
+  <header class="container" style="display:flex;align-items:center;justify-content:space-between">
+    <div class="brand">Abhishek Mishra</div>
+    <nav>
+      <a href="p.html">Home</a>
+      <a href="projects.html">Projects</a>
+      <a href="about.html" style="color:var(--accent)">About</a>
+      <a href="#contact">Contact</a>
+      <button class="cta" onclick="window.open('https://drive.google.com/file/d/1uDoSl_EqK8CoQF4cdIhhkxin4RHK7QiD/view?usp=drivesdk','_blank')">Resume</button>
+    </nav>
+  </header>
+
+  <!-- particles background -->
+  <div id="particles"></div>
+
+  <!-- hero about -->
+  <section class="hero container" id="hero">
+    <div class="hero-panel">
+      <div class="intro">
+        <h1>About — Abhishek Mishra</h1>
+        <p class="muted">Detail-oriented Software Engineer skilled in Java, C/C++, Python, networking and cloud. I work across frontend, backend and system-level engineering to build reliable, efficient solutions.</p>
+        <div style="margin-top:18px">
+          <a class="btn-link" href="mailto:abhirec8081@gmail.com">Email Me</a>
+          <a class="btn-link" style="margin-left:10px" href="https://github.com/Sandilyamishraabhishek" target="_blank">GitHub</a>
+          <a class="btn-link" style="margin-left:10px" href="https://www.linkedin.com/in/abhishek-mishra-73a20725a" target="_blank">LinkedIn</a>
+        </div>
+
+        <div style="margin-top:22px" class="card">
+          <strong>Quick highlights</strong>
+          <div class="muted" style="margin-top:8px">
+            Distributed Systems · Networking · AWS · Data Structures & Algorithms · ML basics
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="card" style="display:flex;flex-direction:column;gap:12px;align-items:center">
+        <img class="avatar" src="a.jpg.jpg" alt="Abhishek">
+        <div style="text-align:center">
+          <div style="font-weight:800">Abhishek Mishra</div>
+          <div class="muted">Lucknow, Uttar Pradesh • abhirec8081@gmail.com</div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- education + projects -->
+  <section class="container" style="padding-bottom:60px">
+    <div style="display:flex;gap:18px;flex-wrap:wrap">
+      <!-- education -->
+      <div style="flex:1;min-width:300px">
+        <div class="card">
+          <h3>Education</h3>
+          <div class="muted" style="margin-bottom:10px">(marksheets and percentages — links taken from uploaded resume) :contentReference[oaicite:4]{index=4}</div>
+
+          <div class="edu-list">
+            <!-- B.Tech -->
+            <div class="edu-item">
+              <div class="edu-left">
+                <div style="font-weight:700">B.Tech — Rajkiya Engineering College, Azamgarh</div>
+                <div class="edu-meta">11/2022 – 06/2026 • CGPA: 8.6</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <!-- sample marksheet link from resume (if you have a specific link replace it) -->
+                <button class="btn-link" onclick="openLink('https://drive.google.com/file/d/1AQpFfeb7KJa-6dPffOAHMQUPgnCzTvVh/view?usp=drivesdk')">View Marksheet</button>
+              </div>
+            </div>
+
+            <!-- Class XII -->
+            <div class="edu-item">
+              <div class="edu-left">
+                <div style="font-weight:700">Higher Secondary (Class XII) — Lucknow Public College</div>
+                <div class="edu-meta">05/2020 – 06/2021 • Percentage: 91.2</div>
+              </div>
+              <div>
+                <button class="btn-link" onclick="openLink('https://drive.google.com/file/d/1y_ye-JRr9DzDfmV1rDu-L_7I6y392eiV/view?usp=drivesdk')">View Marksheet</button>
+              </div>
+            </div>
+
+            <!-- Class X -->
+            <div class="edu-item">
+              <div class="edu-left">
+                <div style="font-weight:700">Secondary (Class X) — Lucknow Public College</div>
+                <div class="edu-meta">04/2018 – 05/2019 • Percentage: 91.6</div>
+              </div>
+              <div>
+                <button class="btn-link" onclick="openLink('https://drive.google.com/file/d/1ff5xL4qJVPejP7nDRH_CA83GF5QZk3a1/view?usp=drivesdk')">View Marksheet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- certificates -->
+        <div class="card" style="margin-top:14px">
+          <h3>Certificates</h3>
+          <div class="certs" style="margin-top:8px">
+            <a class="cert" href="https://drive.google.com/file/d/1i0fen92rwwEwZy9sfjrd-fRyQ_FxE3MH/view?usp=drivesdk" target="_blank">Python Advanced</a>
+            <a class="cert" href="https://drive.google.com/file/d/1wX2mY4jMdyUer1bWvUPj_GhZmLkHkM3e/view?usp=drivesdk" target="_blank">C++ Advanced (Udemy)</a>
+            <a class="cert" href="https://drive.google.com/file/d/1IH5Qj49F3ZQ8vIivIPLW51IXaOG4F7_X/view?usp=drivesdk" target="_blank">C-DAC Cybersecurity</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- projects -->
+      <div style="flex:1;min-width:300px">
+        <div class="card">
+          <h3>Selected Projects</h3>
+          <div class="muted" style="margin-bottom:10px">Links pulled from your resume/github. :contentReference[oaicite:5]{index=5}</div>
+
+          <div class="projects-list">
+            <div class="project">
+              <div>
+                <div style="font-weight:700">Digital Library</div>
+                <div class="muted">React / .NET — 05/2023 – 06/2023</div>
+              </div>
+              <div><a href="https://github.com/Sandilyamishraabhishek/Digital_Library" target="_blank" class="btn-link">Open</a></div>
+            </div>
+
+            <div class="project">
+              <div>
+                <div style="font-weight:700">Banking Management System</div>
+                <div class="muted">C++ / SQLite — 08/2025</div>
+              </div>
+              <div><a href="https://github.com/Sandilyamishraabhishek/BANKING-SYSTEM" target="_blank" class="btn-link">Open</a></div>
+            </div>
+
+            <div class="project">
+              <div>
+                <div style="font-weight:700">Cloud-Based Log Monitoring System</div>
+                <div class="muted">Python / Linux — 07/2025</div>
+              </div>
+              <div><a href="#" class="btn-link" onclick="alert('Repository not provided in resume')">Repo</a></div>
+            </div>
+
+            <div style="margin-top:12px">
+              <a class="btn-link" href="https://github.com/Sandilyamishraabhishek" target="_blank">See all GitHub repos →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- internships quick -->
+        <div class="card" style="margin-top:14px">
+          <h3>Internships</h3>
+          <div class="muted" style="margin-top:8px">
+            BSNL — TEJAS network management (Aug–Sep 2025) • CodexIntern — AI/ML intern (Aug 2025). :contentReference[oaicite:6]{index=6}
+          </div>
+          <div style="margin-top:10px">
+            <button class="btn-link" onclick="openLink('https://drive.google.com/file/d/1uDoSl_EqK8CoQF4cdIhhkxin4RHK7QiD/view?usp=drivesdk')">BSNL Certificate</button>
+            <button class="btn-link" onclick="openLink('https://drive.google.com/file/d/1CnD8cvkIPhu8I8Q_NkWTHeFEWfJzZ_AT/view?usp=drivesdk')" style="margin-left:8px">CodexIntern Cert</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="container" style="padding:40px 0 80px;color:var(--muted);text-align:center">© <span id="year"></span> Abhishek Mishra — Built with HTML, GSAP & tsParticles</footer>
+
+  <!-- AI Assistant -->
+  <button id="aiBtn" title="Open AI assistant">AI Assistant 🤖</button>
+
+  <div id="chatWindow" role="dialog" aria-label="AI Assistant">
+    <div id="chatMessages"><div class="msg ai">Hi Abhishek — try: <br>• "open BSNL certificate" <br>• "show marksheet xii" <br>• "open Digital Library project"</div></div>
+    <input id="chatInput" placeholder="Type: show marksheet xii" />
+  </div>
+
+<script>
+  // set year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // particles (light)
+  tsParticles.load("particles", {
+    fpsLimit: 60,
+    background: { color: "" },
+    interactivity: { events: { onHover: { enable: false } } },
+    particles: { number: { value: 40 }, color: { value: ["#9be7ff", "#ffd369"] }, links: { enable: true, opacity: 0.06 }, move: { enable: true, speed: 0.6 }, size: { value: { min: 1, max: 4 } }, opacity: { value: { min: 0.15, max: 0.9 } } }
+  });
+
+  // simple link opener
+  function openLink(url){
+    window.open(url, '_blank');
+  }
+
+  // AI Assistant logic (local)
+  const aiBtn = document.getElementById('aiBtn');
+  const chatWindow = document.getElementById('chatWindow');
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+
+  aiBtn.addEventListener('click', ()=> {
+    chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
+    if (chatWindow.style.display === 'flex') chatInput.focus();
+  });
+
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') processChat();
+  });
+
+  function appendYou(text){
+    const d = document.createElement('div'); d.className='msg you'; d.innerHTML = `<b>You:</b> ${escapeHtml(text)}`; chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  function appendAI(html){
+    const d = document.createElement('div'); d.className='msg ai'; d.innerHTML = `<b>AI:</b> ${html}`; chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function processChat(){
+    const q = chatInput.value.trim();
+    if (!q) return;
+    appendYou(q);
+
+    const ql = q.toLowerCase();
+
+    // Basic keyword-based actions (local)
+    if (ql.includes('bsnl')) {
+      appendAI('Opening BSNL certificate...'); openLink('https://drive.google.com/file/d/1uDoSl_EqK8CoQF4cdIhhkxin4RHK7QiD/view?usp=drivesdk');
+    } else if (ql.includes('codex') || ql.includes('codexintern')) {
+      appendAI('Opening CodexIntern certificate...'); openLink('https://drive.google.com/file/d/1CnD8cvkIPhu8I8Q_NkWTHeFEWfJzZ_AT/view?usp=drivesdk');
+    } else if (ql.includes('marksheet') && ql.includes('xii')) {
+      appendAI('Opening Class XII marksheet...'); openLink('https://drive.google.com/file/d/1y_ye-JRr9DzDfmV1rDu-L_7I6y392eiV/view?usp=drivesdk');
+    } else if (ql.includes('marksheet') && (ql.includes('x') || ql.includes('10'))) {
+      appendAI('Opening Class X marksheet...'); openLink('https://drive.google.com/file/d/1ff5xL4qJVPejP7nDRH_CA83GF5QZk3a1/view?usp=drivesdk');
+    } else if (ql.includes('digital') || ql.includes('digital library')) {
+      appendAI('Opening Digital Library repo...'); openLink('https://github.com/Sandilyamishraabhishek/Digital_Library');
+    } else if (ql.includes('bank') || ql.includes('banking')) {
+      appendAI('Opening Banking Management repo...'); openLink('https://github.com/Sandilyamishraabhishek/BANKING-SYSTEM');
+    } else if (ql.includes('resume')) {
+      appendAI('Opening resume...'); openLink('https://drive.google.com/file/d/1uDoSl_EqK8CoQF4cdIhhkxin4RHK7QiD/view?usp=drivesdk');
+    } else {
+      // fallback helpful suggestions
+      appendAI('I can open your certificates, marksheets, or projects. Try: "open BSNL", "show marksheet xii", "open Digital Library".');
+    }
+
+    chatInput.value = '';
+  }
+
+  // small HTML-escape helper
+  function escapeHtml(str){ return str.replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  // GSAP reveals
+  gsap.from('.card, .project, .edu-item', { y: 20, opacity: 0, duration: 0.7, stagger: 0.06, scrollTrigger: { trigger: '.container', start: 'top 90%' } });
+
+  // header shadow on scroll
+  window.addEventListener('scroll', ()=> { document.querySelector('header').style.boxShadow = window.scrollY>20 ? '0 12px 30px rgba(3,8,20,0.5)' : ''; });
+
+</script>
+</body>
+</html>

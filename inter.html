@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Internship Hub</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background: #f5f5f5; color: #222; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #4f46e5; color: white; position: sticky; top: 0; z-index: 10; }
+    nav a { margin-left: 20px; color: white; text-decoration: none; font-weight: 600; }
+    .hero { padding: 70px 20px; text-align: center; background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; }
+    .container { width: 90%; margin: auto; padding: 40px 0; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .form-box { background: white; width: 100%; max-width: 400px; margin: auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; }
+    button { padding: 12px; width: 100%; background: #4f46e5; color: white; border: none; font-size: 16px; border-radius: 6px; cursor: pointer; }
+    footer { text-align: center; padding: 20px; background: #111; color: white; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Internship Hub</h1>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#internships">Internships</a>
+    <a href="#resume">Resume Tools</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+    <a href="#login">Login</a>
+  </nav>
+</header>
+
+<section id="home" class="hero">
+  <h2>Find Internships & Build Your Career</h2>
+  <p>Login, create resume, check resume quality & apply for internships.</p>
+</section>
+
+<section id="login" class="container">
+  <h2>Login</h2>
+  <div class="form-box">
+    <input type="email" placeholder="Email" />
+    <input type="password" placeholder="Password" />
+    <button>Login</button>
+    <p style="margin-top:10px; text-align:center;">New user? <a href="#register">Register</a></p>
+  </div>
+</section>
+
+<section id="register" class="container">
+  <h2>Create New Account</h2>
+  <div class="form-box">
+    <input type="text" placeholder="Full Name" />
+    <input type="email" placeholder="Email" />
+    <input type="password" placeholder="Create Password" />
+    <button>Register</button>
+  </div>
+</section>
+
+<section id="resume" class="container">
+  <h2>Resume Maker</h2>
+  <div class="form-box">
+    <input type="text" placeholder="Full Name" />
+    <input type="text" placeholder="Education" />
+    <textarea placeholder="Skills"></textarea>
+    <textarea placeholder="Experience (optional)"></textarea>
+    <button>Create Resume</button>
+  </div>
+
+  <h2 style="margin-top:40px;">Resume Checker</h2>
+  <div class="form-box">
+    <textarea placeholder="Paste your resume text here..."></textarea>
+    <button>Check Resume</button>
+  </div>
+</section>
+
+<section id="internships" class="container">
+  <h2>Find Internships</h2>
+  <select>
+    <option>Select Location</option>
+    <option>Delhi</option>
+    <option>Bengaluru</option>
+    <option>Mumbai</option>
+    <option>Remote</option>
+  </select>
+
+  <div class="cards" style="margin-top:20px;">
+    <div class="card"><h3>Web Dev Internship</h3><p>Location: Remote</p><button>Apply</button></div>
+    <div class="card"><h3>AI/ML Internship</h3><p>Location: Bengaluru</p><button>Apply</button></div>
+    <div class="card"><h3>Marketing Internship</h3><p>Location: Delhi</p><button>Apply</button></div>
+  </div>
+</section>
+
+<section id="about" class="container">
+  <h2>About Us</h2>
+  <p>We provide internship listings, resume tools, and career guidance for students.</p>
+</section>
+
+<section id="contact" class="container">
+  <h2>Contact Us</h2>
+  <p>Email: support@internhub.com</p>
+  <p>Phone: +91 9876543210</p>
+</section>
+
+<footer>
+  <p>© 2025 Internship Hub. All rights reserved.</p>
+</footer>
+</body>
+</html>

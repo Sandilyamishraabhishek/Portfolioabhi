@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Advanced Interactive Landing</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- GSAP Core + ScrollTrigger (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <!-- tsParticles -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+
+  <!-- THREE.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+
+  <!-- EmailJS SDK (for client-side email sending) -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: rgba(255,255,255,0.03);
+      --muted: #9aa4b2;
+      --accent: #ffd369;
+      --glass: rgba(255,255,255,0.04);
+    }
+    /* Light theme variables will be toggled via .light on body */
+    body.light { --bg: #f7f8fb; --muted: #475059; --card: rgba(10,16,24,0.04); --accent: #ff9f1c; color: #0b1220; }
+
+    * { box-sizing: border-box; }
+    html,body { height:100%; margin:0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: var(--bg); color: #fff; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+    body { transition: background 0.35s, color 0.35s; }
+
+    /* Preloader */
+    #preloader { position: fixed; inset:0; display:flex; align-items:center; justify-content:center; background:var(--bg); z-index:9999; }
+    .pre-balls { display:flex; gap:10px; align-items:flex-end; }
+    .pre-balls div { width:12px; height:12px; background:var(--accent); border-radius:50%; animation:bounce 0.6s infinite alternate; }
+    .pre-balls div:nth-child(2){ animation-delay:0.12s } .pre-balls div:nth-child(3){ animation-delay:0.24s }
+    @keyframes bounce { to { transform: translateY(-14px); } }
+
+    /* Navbar */
+    header.navbar {
+      position: fixed; top: 18px; left: 18px; right:18px; display:flex; align-items:center; justify-content:space-between;
+      padding:12px 18px; z-index:60; border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      backdrop-filter: blur(8px);
+      transition: transform 0.25s, background 0.25s, box-shadow 0.25s;
+    }
+    header.navbar.scrolled { box-shadow: 0 10px 30px rgba(2,6,23,0.5) }
+
+    .brand { font-weight:800; letter-spacing:0.4px }
+    .navlinks { display:flex; gap:14px; align-items:center }
+    .navlinks a { color: var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; font-weight:600; font-size:14px }
+    .navlinks a:hover { color:var(--accent) }
+
+    .controls { display:flex; gap:10px; align-items:center }
+    .theme-toggle { background:transparent; border:1px solid rgba(255,255,255,0.06); padding:8px; border-radius:10px; cursor:pointer; color:var(--muted) }
+    .cta-btn { background:var(--accent); border:none; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; color:#000 }
+
+    /* Mobile hamburger */
+    .hamburger { display:none; width:40px; height:40px; align-items:center; justify-content:center; border-radius:10px; border:1px solid rgba(255,255,255,0.04); cursor:pointer; }
+    .hamburger .bars { width:18px; height:2px; background:var(--muted); position:relative; }
+    .hamburger .bars::before, .hamburger .bars::after { content:''; position:absolute; left:0; right:0; height:2px; background:var(--muted); }
+    .hamburger .bars::before { top:-6px } .hamburger .bars::after { bottom:-6px }
+
+    /* Hero */
+    .hero { height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; padding:40px; }
+    #videoBg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; opacity:0.45; pointer-events:none; }
+    #tsparticles { position:absolute; inset:0; z-index:5; pointer-events:none; }
+    /* floating blobs container */
+    .blobs { position:absolute; inset:0; z-index:1; pointer-events:none; overflow:visible; }
+
+    .hero-inner { position:relative; z-index:10; max-width:1100px; display:grid; grid-template-columns: 1fr 420px; gap:36px; align-items:center; width:100% }
+    .hero-text h1 { font-size:48px; margin:0 0 12px 0; line-height:1.02 }
+    .hero-text p { color:var(--muted); margin:0 0 18px 0; font-size:17px; max-width:620px }
+
+    .hero-cta { display:flex; gap:12px; }
+
+    /* card panels on the right */
+    .hero-panel { background:var(--card); padding:20px; border-radius:14px; box-shadow: 0 8px 30px rgba(2,6,23,0.45) }
+    .feature-list { display:grid; gap:12px; margin-top:10px }
+    .feature-item { display:flex; gap:10px; align-items:center; font-weight:600; color:var(--muted) }
+
+    /* Sections */
+    section { padding:90px 22px; position:relative; z-index:2 }
+    .container { max-width:1100px; margin:0 auto }
+
+    .cards { display:grid; gap:18px; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); margin-top:28px }
+    .card { background:var(--card); padding:22px; border-radius:14px; transition: transform .35s, box-shadow .35s; }
+    .card:hover { transform: translateY(-8px); box-shadow: 0 18px 40px rgba(2,6,23,0.5) }
+
+    /* Testimonials slider */
+    .slider { display:flex; gap:14px; margin-top:22px; overflow:hidden; align-items:center }
+    .slide-track { display:flex; gap:14px; transform:translateX(0); transition: transform .5s ease; }
+    .testimonial { min-width:280px; background:var(--card); padding:18px; border-radius:12px; color:var(--muted) }
+
+    /* Contact form */
+    .contact-form { display:grid; gap:10px; max-width:560px; margin:18px auto 0; }
+    input, textarea { width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit; outline:none }
+    .form-row { display:flex; gap:10px }
+    .submit-msg { text-align:center; margin-top:12px; color:var(--muted) }
+
+    /* Footer */
+    footer { padding:40px 22px; color:var(--muted); text-align:center }
+
+    /* 3D canvas */
+    #threeCanvas { width:100%; height:320px; display:block; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+
+    /* Responsive */
+    @media (max-width:1000px) {
+      .hero-inner { grid-template-columns: 1fr; }
+    }
+    @media (max-width:800px) {
+      .navlinks { display:none }
+      .hamburger { display:flex }
+      header.navbar { padding:10px }
+      .hero-text h1 { font-size:34px }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PRELOADER -->
+  <div id="preloader">
+    <div class="pre-balls">
+      <div></div><div></div><div></div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="navbar" id="navbar">
+    <div style="display:flex;gap:18px;align-items:center">
+      <div class="brand">MyLanding</div>
+      <nav class="navlinks" id="navlinks">
+        <a href="#hero">Home</a>
+        <a href="#services">Services</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#3d">3D</a>
+        <a href="#testimonials">Testimonials</a>
+      </nav>
+    </div>
+
+    <div class="controls">
+      <button class="theme-toggle" id="toggleTheme" title="Toggle theme">🌓</button>
+      <button class="cta-btn" id="contactBtn">Contact</button>
+      <button class="hamburger" id="hambtn" aria-label="menu">
+        <div class="bars"></div>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="hero" aria-label="Hero">
+    <!-- Video background (coverr public mp4). Replace if you want your own. -->
+    <video id="videoBg" autoplay muted loop playsinline>
+      <source src="https://cdn.coverr.co/videos/coverr-abstract-data-1600x900.mp4" type="video/mp4">
+    </video>
+
+    <!-- tsParticles container -->
+    <div id="tsparticles" aria-hidden="true"></div>
+
+    <!-- Floating decorative blobs -->
+    <svg class="blobs" width="0" height="0" aria-hidden="true">
+      <!-- defs for filters or gradients if needed -->
+    </svg>
+
+    <div class="hero-inner container">
+      <div class="hero-text">
+        <div class="tag" style="display:inline-block;background:rgba(255,211,105,0.12);padding:6px 10px;border-radius:999px;color:var(--accent);font-weight:700;margin-bottom:14px">New · 2025</div>
+        <h1>Interactive landing — modern web experiences</h1>
+        <p>Particles, 3D, parallax scroll, floating blobs, GSAP motion, and an email-capable contact form — all in a single page.</p>
+
+        <div class="hero-cta">
+          <button class="cta-btn" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">Explore</button>
+          <button class="theme-toggle" id="miniTheme" title="Toggle theme">Toggle</button>
+        </div>
+      </div>
+
+      <aside class="hero-panel" aria-hidden="true">
+        <div style="display:flex;gap:10px;align-items:center;justify-content:space-between">
+          <strong>Highlights</strong>
+          <small style="color:var(--muted)">Interactive</small>
+        </div>
+
+        <div class="feature-list">
+          <div class="feature-item">⚡ GSAP + ScrollTrigger animations</div>
+          <div class="feature-item">✨ Floating blobs & particles</div>
+          <div class="feature-item">🧊 3D Scene (Three.js)</div>
+        </div>
+
+        <div style="margin-top:14px">
+          <small style="color:var(--muted)">Quick links</small>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <a style="font-weight:700;color:var(--accent);text-decoration:none" href="#pricing">Pricing</a>
+            <a style="font-weight:700;color:var(--muted);text-decoration:none" href="#testimonials">Testimonials</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="container">
+      <h2>Our Services</h2>
+      <div class="cards">
+        <div class="card">Design systems & UI</div>
+        <div class="card">Animations & micro-interactions</div>
+        <div class="card">Frontend engineering</div>
+        <div class="card">Performance & accessibility</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="container">
+      <h2>Pricing</h2>
+      <div class="cards">
+        <div class="card"><h3>Starter</h3><p style="color:var(--muted)">$19 / month</p></div>
+        <div class="card"><h3>Pro</h3><p style="color:var(--muted)">$49 / month</p></div>
+        <div class="card"><h3>Enterprise</h3><p style="color:var(--muted)">Custom</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3D Canvas -->
+  <section id="3d">
+    <div class="container">
+      <h2>3D Scene</h2>
+      <canvas id="threeCanvas"></canvas>
+      <p style="color:var(--muted);margin-top:12px">Move your mouse to slightly parallax the object, it rotates automatically.</p>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials">
+    <div class="container">
+      <h2>Testimonials</h2>
+      <div class="slider" aria-live="polite">
+        <div class="slide-track" id="slideTrack">
+          <div class="testimonial">"Amazing product — boosted conversions." — Priya</div>
+          <div class="testimonial">"Clean code & great support." — Rahul</div>
+          <div class="testimonial">"Beautiful UX and performance." — Sara</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <h2>Contact Us</h2>
+      <form id="contactForm" class="contact-form" autocomplete="on">
+        <div class="form-row">
+          <input type="text" name="name" placeholder="Your name" required>
+          <input type="email" name="email" placeholder="Your email" required>
+        </div>
+        <textarea name="message" rows="5" placeholder="Message" required></textarea>
+        <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-top:6px">
+          <button class="cta-btn" type="submit">Send Message</button>
+          <button class="theme-toggle" type="button" id="clearForm">Clear</button>
+        </div>
+        <div class="submit-msg" id="formMsg" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    © <span id="year"></span> MyLanding • Built with HTML, GSAP, tsParticles & Three.js
+  </footer>
+
+  <!-- --- SCRIPTS --- -->
+  <script>
+  // ----------------------
+  // Basic helpers & init
+  // ----------------------
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Preloader fade out
+  window.addEventListener('load', () => {
+    const pre = document.getElementById('preloader');
+    gsap.to(pre, { opacity: 0, duration: 0.6, onComplete: () => pre.remove() });
+  });
+
+  // Simple mobile nav toggle
+  const hambtn = document.getElementById('hambtn');
+  const navlinks = document.getElementById('navlinks');
+  hambtn.addEventListener('click', () => {
+    if (navlinks.style.display === 'flex') { navlinks.style.display = ''; }
+    else { navlinks.style.display = 'flex'; navlinks.style.flexDirection = 'column'; navlinks.style.position='absolute'; navlinks.style.top='70px'; navlinks.style.right='18px'; navlinks.style.background='rgba(0,0,0,0.45)'; navlinks.style.padding='12px'; navlinks.style.borderRadius='10px'; }
+  });
+
+  // Navbar background on scroll
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) navbar.classList.add('scrolled'); else navbar.classList.remove('scrolled');
+  });
+
+  // Theme toggle (dark/light)
+  const toggleTheme = () => document.body.classList.toggle('light');
+  document.getElementById('toggleTheme').addEventListener('click', toggleTheme);
+  document.getElementById('miniTheme').addEventListener('click', toggleTheme);
+
+  // Contact button scroll to contact
+  document.getElementById('contactBtn').addEventListener('click', ()=> document.getElementById('contact').scrollIntoView({behavior:'smooth'}));
+  document.getElementById('clearForm').addEventListener('click', ()=> document.getElementById('contactForm').reset());
+
+  // Smooth link scroll behavior for nav anchors
+  document.querySelectorAll('a[href^="#"]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const target = document.querySelector(el.getAttribute('href'));
+      if (target) target.scrollIntoView({behavior:'smooth'});
+    });
+  });
+
+  // ----------------------
+  // tsParticles (particles + links + interactivity)
+  // ----------------------
+  tsParticles.load("tsparticles", {
+    fpsLimit: 60,
+    interactivity: {
+      events: { onHover: { enable: true, mode: "repulse" }, onClick: { enable: true, mode: "push" } },
+      modes: { repulse: { distance: 120 }, push: { quantity: 3 } }
+    },
+    particles: {
+      number: { value: 60 },
+      color: { value: ["#ffffff", "#ffd369", "#9be7ff"] },
+      links: { enable: true, color: "#ffffff", opacity: 0.08 },
+      move: { enable: true, speed: 0.6, outModes: "out" },
+      size: { value: { min: 1, max: 4 } },
+      opacity: { value: { min: 0.2, max: 0.9 } }
+    }
+  });
+
+  // ----------------------
+  // Floating blobs (CSS + SVG can be replaced with canvas; here we create DOM blobs)
+  // ----------------------
+  (function createBlobs(){
+    const blobCount = 3;
+    const container = document.querySelector('.blobs');
+    for (let i=0;i<blobCount;i++){
+      const b = document.createElement('div');
+      b.style.position='absolute';
+      b.style.width = `${180 + Math.random()*220}px`;
+      b.style.height = b.style.width;
+      b.style.left = `${Math.random()*80}%`;
+      b.style.top = `${10 + Math.random()*70}%`;
+      b.style.background = `radial-gradient(circle at 30% 30%, rgba(255,211,105,0.14), rgba(255,211,105,0.06) 40%, transparent 70%)`;
+      b.style.filter = 'blur(30px)';
+      b.style.borderRadius = '46% 54% 60% 40% / 50% 45% 55% 50%';
+      b.style.transform = `translate(-50%,-50%)`;
+      b.style.zIndex = 2;
+      b.style.pointerEvents = 'none';
+      container.appendChild(b);
+      // animate
+      gsap.to(b, { x: Math.random()*200-100, y: Math.random()*150-75, duration: 6+Math.random()*8, yoyo:true, repeat:-1, ease:"sine.inOut" });
+      gsap.to(b, { rotation: Math.random()*40-20, duration: 8+Math.random()*6, yoyo:true, repeat:-1, ease:"sine.inOut" });
+      gsap.to(b, { opacity: 0.8 - Math.random()*0.5, duration: 4, yoyo:true, repeat:-1, ease:"sine.inOut" });
+    }
+  })();
+
+  // ----------------------
+  // GSAP: scroll-triggered reveal animations & parallax
+  // ----------------------
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils.toArray('.card, .testimonial, .feature-item').forEach((el, i) => {
+    gsap.fromTo(el, { y: 30, opacity: 0 }, {
+      y:0, opacity:1, duration: 0.8, delay: i*0.05,
+      scrollTrigger: { trigger: el, start: 'top 85%' }
+    });
+  });
+
+  // Parallax on hero text (subtle)
+  gsap.to('.hero-inner', {
+    y: 30,
+    ease: "none",
+    scrollTrigger: {
+      trigger: '#hero',
+      start: "top top",
+      end: "bottom top",
+      scrub: 0.6
+    }
+  });
+
+  // Parallax background video speed (scale slightly)
+  gsap.to('#videoBg', {
+    scale: 1.06,
+    ease: "none",
+    scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: 0.6 }
+  });
+
+  // ----------------------
+  // Testimonials slider (auto play)
+  // ----------------------
+  (function testimonialsSlider(){
+    const track = document.getElementById('slideTrack');
+    const slides = track.children;
+    let i=0;
+    const slideW = 300 + 14; // width + gap
+    setInterval(()=>{
+      i++;
+      gsap.to(track, { x: - (i * slideW), duration: 0.6, ease: "power2.out" });
+      if (i >= slides.length - 1) {
+        // reset loop
+        setTimeout(()=> {
+          gsap.to(track, { x: 0, duration: 0 });
+          i = 0;
+        }, 1200);
+      }
+    }, 3500);
+  })();
+
+  // ----------------------
+  // THREE.js 3D scene (rotating torus + mouse parallax)
+  // ----------------------
+  (function initThree(){
+    const canvas = document.getElementById('threeCanvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / Math.max(1, canvas.clientHeight), 0.1, 100);
+    camera.position.set(0,0,6);
+
+    // lighting
+    const light = new THREE.DirectionalLight(0xffffff, 1.0);
+    light.position.set(5,5,5);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040, 0.8));
+
+    // geometry: torus knot for nice visual
+    const geom = new THREE.TorusKnotGeometry(1.35, 0.35, 200, 32);
+    const mat = new THREE.MeshStandardMaterial({ color: 0xffd369, metalness: 0.2, roughness: 0.35, emissive: 0x222222 });
+    const mesh = new THREE.Mesh(geom, mat);
+    scene.add(mesh);
+
+    // responsive
+    function resize() {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / Math.max(1, h);
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // subtle mouse parallax
+    const mouse = { x:0, y:0 };
+    window.addEventListener('mousemove', (e) => {
+      const r = canvas.getBoundingClientRect();
+      mouse.x = ( (e.clientX - r.left) / r.width ) * 2 - 1;
+      mouse.y = - ( (e.clientY - r.top) / r.height ) * 2 + 1;
+    });
+
+    // animate
+    let t = 0;
+    function animate(){
+      t += 0.01;
+      mesh.rotation.x = 0.4 * Math.sin(t * 0.7);
+      mesh.rotation.y = t * 0.4;
+      // parallax camera
+      camera.position.x += (mouse.x * 1.4 - camera.position.x) * 0.08;
+      camera.position.y += (mouse.y * 1.4 - camera.position.y) * 0.08;
+      camera.lookAt(scene.position);
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+
+  // ----------------------
+  // Contact form: EmailJS (client-side)
+  // ----------------------
+  (function contactForm(){
+    // Initialize EmailJS - replace with your public key
+    // Create an account at https://www.emailjs.com/, create a Service & Template,
+    // then copy the values into the placeholders below.
+    (function(){ emailjs.init('YOUR_PUBLIC_KEY'); })();
+
+    const form = document.getElementById('contactForm');
+    const msg = document.getElementById('formMsg');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      msg.textContent = 'Sending…';
+      // serviceID, templateID — replace with your actual values
+      const serviceID = 'YOUR_SERVICE_ID';
+      const templateID = 'YOUR_TEMPLATE_ID';
+
+      // If you haven't created EmailJS, you can POST to your server or Formspree instead.
+      emailjs.sendForm(serviceID, templateID, form)
+      .then(() => {
+        msg.textContent = 'Thanks — your message was sent!';
+        form.reset();
+      }, (err) => {
+        console.error('EmailJS error:', err);
+        msg.textContent = 'Failed to send. Try again later or check console for details.';
+      });
+    });
+  })();
+
+  // ----------------------
+  // Accessibility: focus outlines for keyboard users
+  // ----------------------
+  (function focusOutline(){
+    function handleFirstTab(e) {
+      if (e.key === 'Tab') {
+        document.body.classList.add('show-focus-outline');
+        window.removeEventListener('keydown', handleFirstTab);
+      }
+    }
+    window.addEventListener('keydown', handleFirstTab);
+  })();
+
+  // ----------------------
+  // Small safety: if EmailJS placeholders remain, show hint
+  // ----------------------
+  setTimeout(()=> {
+    if (emailjs && emailjs._userID === undefined) {
+      console.info('Reminder: replace EmailJS placeholders (YOUR_SERVICE_ID, YOUR_TEMPLATE_ID, YOUR_PUBLIC_KEY) with your account values from https://www.emailjs.com.');
+    }
+  }, 1400);
+
+  </script>
+</body>
+</html>
